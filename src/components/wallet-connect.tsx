@@ -10,6 +10,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from './ui/skeleton'
 
@@ -22,7 +24,7 @@ export default function WalletConnect() {
   }, [])
 
   if (!isClient) {
-    return <Skeleton className="h-10 w-full" />
+    return <Skeleton className="h-9 w-28" />
   }
 
   if (account) {
@@ -32,12 +34,14 @@ export default function WalletConnect() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-start">
+          <Button variant="outline">
             <Wallet className="mr-2 h-4 w-4" />
             <span className="truncate">{truncatedAddress}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-full">
+        <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuLabel>{truncatedAddress}</DropdownMenuLabel>
+            <DropdownMenuSeparator/>
           <DropdownMenuItem onClick={disconnectWallet}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Disconnect</span>
@@ -49,7 +53,7 @@ export default function WalletConnect() {
 
   return (
     <>
-      <Button onClick={connectWallet} className="w-full">
+      <Button onClick={connectWallet} variant="default">
         <Wallet className="mr-2 h-4 w-4" />
         <span>Connect Wallet</span>
       </Button>

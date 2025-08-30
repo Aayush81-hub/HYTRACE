@@ -108,15 +108,16 @@ export default function RootLayout({
                 </SidebarMenu>
               </SidebarContent>
               <SidebarFooter>
-                <WalletConnect />
+                {/* The WalletConnect component was here. It is now in the header. */}
               </SidebarFooter>
             </Sidebar>
             <SidebarInset>
-              <header className="flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:h-16">
+              <header className="flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:h-16">
                 <SidebarTrigger className="md:hidden" />
                 <div className="flex-1">
                   {/* Potentially add breadcrumbs or page title here */}
                 </div>
+                <WalletConnect />
               </header>
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 {children}
