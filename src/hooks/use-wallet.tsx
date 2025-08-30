@@ -3,12 +3,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { ethers } from 'ethers'
+import { GHC_CONTRACT_ADDRESS, GHC_CONTRACT_ABI } from '@/lib/blockchain'
 
 const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
 
 interface WalletState {
   account: string | null
   signer: ethers.Signer | null
+  contract: ethers.Contract | null
   connectWallet: () => Promise<void>
   disconnectWallet: () => void
   error: string | null
@@ -27,6 +29,7 @@ export const useWallet = () => {
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const [account, setAccount] = useState<string | null>(null)
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [error, setError] = useState<string | null>(null)
 
   const getEthereum = () => {
@@ -36,16 +39,19 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     return null;
   }
   
-  const updateSigner = async (ethereum: any) => {
+  const updateSignerAndContract = async (ethereum: any) => {
       const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
       setSigner(signer);
+      
+      const contract = new ethers.Contract(GHC_CONTRACT_ADDRESS, GHC_CONTRACT_ABI, signer);
+      setContract(contract);
   }
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length > 0) {
       setAccount(accounts[0]);
-      updateSigner(getEthereum());
+      updateSignerAndContract(getEthereum());
       checkNetwork();
     } else {
       disconnectWallet();
@@ -53,7 +59,6 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   };
   
   const handleChainChanged = () => {
-    // Reload the page to ensure the app is in sync with the new network
     window.location.reload();
   };
 
@@ -85,9 +90,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: SEPOLIA_CHAIN_ID }],
         });
-        // After switching, the chainChanged event should fire, which reloads the page.
       } catch (switchError: any) {
-        // This error code indicates that the chain has not been added to MetaMask.
         if (switchError.code === 4902) {
             setError("Sepolia network not found in your MetaMask. Please add it manually.");
         } else {
@@ -111,7 +114,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (accounts.length !== 0) {
         setAccount(accounts[0])
-        await updateSigner(ethereum);
+        await updateSignerAndContract(ethereum);
       } else {
         console.log('No authorized account found')
       }
@@ -146,13 +149,12 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
       const isCorrectNetwork = await checkNetwork();
       if (!isCorrectNetwork) {
-          // The error is already set by checkNetwork/switchNetwork
           return;
       }
 
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
       setAccount(accounts[0])
-      await updateSigner(ethereum);
+      await updateSignerAndContract(ethereum);
       setError(null)
     } catch (err) {
       setError('Failed to connect wallet.')
@@ -162,10 +164,11 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const disconnectWallet = () => {
     setAccount(null)
     setSigner(null)
+    setContract(null);
   }
 
   return (
-    <WalletContext.Provider value={{ account, signer, connectWallet, disconnectWallet, error }}>
+    <WalletContext.Provider value={{ account, signer, contract, connectWallet, disconnectWallet, error }}>
       {children}
     </WalletContext.Provider>
   )

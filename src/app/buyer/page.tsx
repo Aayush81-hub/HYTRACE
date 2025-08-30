@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Card,
   CardContent,
@@ -17,43 +18,113 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ghcTokens as initialGhcTokens, GHCToken } from '@/lib/mock-data'
 import { useToast } from '@/hooks/use-toast'
-import { Droplets, Sun, Wind, Loader, CheckCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Droplets, Sun, Wind, Loader, CheckCircle, RefreshCw } from 'lucide-react'
+import { useWallet } from '@/hooks/use-wallet'
+import { GHCToken } from '@/lib/mock-data' // Using type from mock-data
+import { ethers } from 'ethers'
 
 type TransactionState = {
-  [tokenId: number]: 'pending' | 'success' | 'idle'
+  [tokenId: string]: 'pending' | 'success' | 'idle'
 }
 
 export default function BuyerPage() {
   const { toast } = useToast()
-  const [availableTokens, setAvailableTokens] = useState<GHCToken[]>(
-    initialGhcTokens.filter((token) => token.status === 'Available')
-  )
+  const { account, contract } = useWallet();
+  const [availableTokens, setAvailableTokens] = useState<GHCToken[]>([])
   const [transactions, setTransactions] = useState<TransactionState>({})
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchAvailableTokens = useCallback(async () => {
+    if (!contract) return;
+    setIsLoading(true);
+    try {
+      // In a real app, you'd get available tokens from a marketplace contract or backend.
+      // Here we simulate this by fetching all minted tokens and filtering them.
+      const issueFilter = contract.filters.CreditIssued();
+      const issuedEvents = await contract.queryFilter(issueFilter);
+
+      const tokens: GHCToken[] = await Promise.all(issuedEvents.map(async (event) => {
+        const args = event.args;
+        const tokenId = Number(args.tokenId);
+        const owner = await contract.ownerOf(tokenId);
+        const details = await contract.creditDetails(tokenId);
+        
+        // A token is "Available" if it's not owned by the current user and not retired.
+        const isAvailable = owner.toLowerCase() !== account?.toLowerCase() && !details.isRetired;
+        
+        return {
+          id: tokenId,
+          producer: args.producer,
+          energySource: details.energySource,
+          productionDate: new Date(Number(details.productionDate) * 1000).toLocaleDateString(),
+          price: 150, // Price would come from a marketplace contract in a real app
+          status: isAvailable ? 'Available' : 'Owned',
+        };
+      }));
+      
+      setAvailableTokens(tokens.filter(t => t.status === 'Available'));
+
+    } catch (error) {
+      console.error("Failed to fetch tokens:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch available tokens from the blockchain.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contract, account, toast]);
+
+  useEffect(() => {
+    fetchAvailableTokens();
+  }, [fetchAvailableTokens]);
+
 
   const handleBuy = async (tokenToBuy: GHCToken) => {
+    if (!contract || !account) {
+        toast({
+            title: 'Error',
+            description: 'Please connect your wallet to purchase tokens.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
     setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'pending' }))
 
-    // Simulate blockchain transaction delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+        const tx = await contract.transferFrom(tokenToBuy.producer, account, tokenToBuy.id);
+        
+        toast({
+            title: 'Purchase Submitted',
+            description: `Transaction for GHC Token #${tokenToBuy.id} sent. Waiting for confirmation.`,
+        });
 
-    // In a real app, you would interact with a smart contract here.
-    // For now, we simulate a successful transaction.
-    toast({
-      title: 'Purchase Successful',
-      description: `Transaction for GHC Token #${tokenToBuy.id} confirmed.`,
-    })
+        await tx.wait();
 
-    setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'success' }))
+        toast({
+          title: 'Purchase Successful',
+          description: `Transaction for GHC Token #${tokenToBuy.id} confirmed.`,
+        })
 
-    // Keep the success state for a bit before removing the token
-    setTimeout(() => {
-        setAvailableTokens((prevTokens) =>
-            prevTokens.filter((token) => token.id !== tokenToBuy.id)
-        );
-    }, 1500)
+        setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'success' }))
+        
+        setTimeout(() => {
+            fetchAvailableTokens(); // Refresh the list after purchase
+            setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'idle' }))
+        }, 1500);
+
+    } catch (error: any) {
+        console.error("Purchase failed:", error);
+        toast({
+            title: 'Purchase Failed',
+            description: error.reason || 'An error occurred during the transaction.',
+            variant: 'destructive'
+        });
+        setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'idle' }))
+    }
   }
   
   const energyIcons = {
@@ -71,11 +142,16 @@ export default function BuyerPage() {
         </p>
       </div>
         <Card>
-          <CardHeader>
-            <CardTitle>Available GHC Tokens</CardTitle>
-            <CardDescription>
-              Browse and purchase GHC tokens from certified producers.
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Available GHC Tokens</CardTitle>
+              <CardDescription>
+                Browse and purchase GHC tokens from certified producers.
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="icon" onClick={fetchAvailableTokens} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>
@@ -90,10 +166,18 @@ export default function BuyerPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {availableTokens.map((token) => (
-                    <TableRow key={token.id} className={cn(transactions[token.id] === 'success' && 'opacity-50 transition-opacity duration-500')}>
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                            <Loader className="mx-auto h-6 w-6 animate-spin text-primary" />
+                            <p className="mt-2 text-muted-foreground">Loading tokens from the blockchain...</p>
+                        </TableCell>
+                    </TableRow>
+                ) : availableTokens.length > 0 ? (
+                  availableTokens.map((token) => (
+                    <TableRow key={token.id}>
                       <TableCell className="font-medium">#{token.id}</TableCell>
-                      <TableCell>{token.producer}</TableCell>
+                      <TableCell className="font-mono text-xs">{`${token.producer.substring(0,6)}...${token.producer.substring(token.producer.length - 4)}`}</TableCell>
                       <TableCell className="flex items-center gap-2">
                           {energyIcons[token.energySource]}
                           {token.energySource}
@@ -106,7 +190,7 @@ export default function BuyerPage() {
                         <Button
                           variant={transactions[token.id] === 'success' ? 'ghost' : 'default'}
                           size="sm"
-                          disabled={transactions[token.id] === 'pending' || transactions[token.id] === 'success'}
+                          disabled={!account || transactions[token.id] === 'pending' || transactions[token.id] === 'success'}
                           onClick={() => handleBuy(token)}
                           className="w-24"
                         >
@@ -116,7 +200,14 @@ export default function BuyerPage() {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                            No available tokens found on the marketplace.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>

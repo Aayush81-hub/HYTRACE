@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Sun, Wind, Droplets, AlertTriangle } from 'lucide-react'
-import { useEffect } from 'react'
+import { Calendar as CalendarIcon, Sun, Wind, Droplets, AlertTriangle, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import {
   Card,
@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 import { useWallet } from '@/hooks/use-wallet'
+import { ethers } from 'ethers'
 
 const formSchema = z.object({
   producerAddress: z.string().startsWith('0x', { message: "Must be a valid wallet address starting with '0x'" }).min(42, "Address must be 42 characters").max(42, "Address must be 42 characters"),
@@ -53,7 +54,8 @@ const formSchema = z.object({
 
 export default function ProducerPage() {
   const { toast } = useToast()
-  const { account } = useWallet()
+  const { account, contract } = useWallet()
+  const [isMinting, setIsMinting] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,18 +73,61 @@ export default function ProducerPage() {
     }
   }, [account, form])
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    toast({
-      title: 'Minting Successful!',
-      description: `Successfully minted ${values.mwhAmount} GHC token(s) for ${values.producerAddress}.`,
-    })
-    // form.reset() would clear the address field even if connected, so we only reset the other fields
-    form.reset({
-        producerAddress: account || '', // Keep address if connected
-        mwhAmount: 1,
-        energySource: undefined,
-        productionDate: undefined
-    })
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!contract) {
+        toast({
+            title: 'Error',
+            description: 'Smart contract not connected. Please connect your wallet.',
+            variant: 'destructive'
+        })
+        return;
+    }
+    
+    setIsMinting(true);
+
+    try {
+        // The contract expects a Unix timestamp for the date.
+        const productionTimestamp = Math.floor(values.productionDate.getTime() / 1000);
+        
+        // The contract mints one token at a time. We'll loop for the mwhAmount.
+        for (let i = 0; i < values.mwhAmount; i++) {
+            const tx = await contract.certifyAndIssueCredit(
+                values.producerAddress,
+                values.energySource,
+                productionTimestamp
+            );
+            
+            toast({
+                title: 'Transaction Submitted',
+                description: `Minting token ${i + 1} of ${values.mwhAmount}. Transaction hash: ${tx.hash}`
+            })
+
+            // Wait for the transaction to be mined
+            await tx.wait();
+            
+            toast({
+                title: 'Minting Successful!',
+                description: `Successfully minted token ${i + 1} of ${values.mwhAmount} for ${values.producerAddress}.`,
+            })
+        }
+        
+        form.reset({
+            producerAddress: account || '',
+            mwhAmount: 1,
+            energySource: undefined,
+            productionDate: undefined
+        })
+
+    } catch (error: any) {
+        console.error("Minting failed:", error);
+        toast({
+            title: 'Minting Failed',
+            description: error.reason || 'An error occurred during the transaction.',
+            variant: 'destructive'
+        })
+    } finally {
+        setIsMinting(false);
+    }
   }
 
   return (
@@ -136,7 +181,7 @@ export default function ProducerPage() {
                     name="mwhAmount"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>MWh Produced</FormLabel>
+                        <FormLabel>MWh Produced (Number of tokens to mint)</FormLabel>
                         <FormControl>
                             <Input type="number" min="1" placeholder="e.g., 100" {...field} />
                         </FormControl>
@@ -220,8 +265,9 @@ export default function ProducerPage() {
                     />
                     </div>
 
-                    <Button type="submit" size="lg" className="w-full" disabled={!account}>
-                    Mint Token
+                    <Button type="submit" size="lg" className="w-full" disabled={!account || isMinting}>
+                      {isMinting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isMinting ? 'Minting...' : 'Mint Token(s)'}
                     </Button>
                 </form>
                 </Form>

@@ -1,9 +1,10 @@
+
 // This file contains the contract address and ABI for the GreenHydrogenCredit contract.
 // The contract address is a placeholder and should be replaced with the actual address
 // of your deployed contract.
 
 // TODO: Replace with your deployed contract address
-export const GHC_CONTRACT_ADDRESS = '0xYourContractAddressHere';
+export const GHC_CONTRACT_ADDRESS = '0x9E1129141a4A34d5575510619C45693457A11e2A';
 
 // The ABI (Application Binary Interface) for the GreenHydrogenCredit contract.
 // This is generated from the Solidity contract and is used by ethers.js to
@@ -459,6 +460,30 @@ export const GHC_CONTRACT_ABI = [
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenOfOwnerByIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
