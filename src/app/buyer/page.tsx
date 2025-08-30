@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -16,18 +17,43 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ghcTokens } from '@/lib/mock-data'
+import { ghcTokens as initialGhcTokens, GHCToken } from '@/lib/mock-data'
 import { useToast } from '@/hooks/use-toast'
-import { Droplets, Sun, Wind } from 'lucide-react'
+import { Droplets, Sun, Wind, Loader, CheckCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+type TransactionState = {
+  [tokenId: number]: 'pending' | 'success' | 'idle'
+}
 
 export default function BuyerPage() {
   const { toast } = useToast()
+  const [availableTokens, setAvailableTokens] = useState<GHCToken[]>(
+    initialGhcTokens.filter((token) => token.status === 'Available')
+  )
+  const [transactions, setTransactions] = useState<TransactionState>({})
 
-  const handleBuy = (tokenId: number) => {
+  const handleBuy = async (tokenToBuy: GHCToken) => {
+    setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'pending' }))
+
+    // Simulate blockchain transaction delay
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
+    // In a real app, you would interact with a smart contract here.
+    // For now, we simulate a successful transaction.
     toast({
       title: 'Purchase Successful',
-      description: `You have successfully purchased GHC Token #${tokenId}.`,
+      description: `Transaction for GHC Token #${tokenToBuy.id} confirmed.`,
     })
+
+    setTransactions((prev) => ({ ...prev, [tokenToBuy.id]: 'success' }))
+
+    // Keep the success state for a bit before removing the token
+    setTimeout(() => {
+        setAvailableTokens((prevTokens) =>
+            prevTokens.filter((token) => token.id !== tokenToBuy.id)
+        );
+    }, 1500)
   }
   
   const energyIcons = {
@@ -64,10 +90,8 @@ export default function BuyerPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ghcTokens
-                  .filter((token) => token.status === 'Available')
-                  .map((token) => (
-                    <TableRow key={token.id}>
+                {availableTokens.map((token) => (
+                    <TableRow key={token.id} className={cn(transactions[token.id] === 'success' && 'opacity-50 transition-opacity duration-500')}>
                       <TableCell className="font-medium">#{token.id}</TableCell>
                       <TableCell>{token.producer}</TableCell>
                       <TableCell className="flex items-center gap-2">
@@ -80,11 +104,15 @@ export default function BuyerPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         <Button
-                          variant="default"
+                          variant={transactions[token.id] === 'success' ? 'ghost' : 'default'}
                           size="sm"
-                          onClick={() => handleBuy(token.id)}
+                          disabled={transactions[token.id] === 'pending' || transactions[token.id] === 'success'}
+                          onClick={() => handleBuy(token)}
+                          className="w-24"
                         >
-                          Buy
+                          {transactions[token.id] === 'pending' && <Loader className="animate-spin" />}
+                          {transactions[token.id] === 'success' && <CheckCircle className="text-green-500" />}
+                          {!transactions[token.id] && 'Buy'}
                         </Button>
                       </TableCell>
                     </TableRow>
