@@ -26,7 +26,8 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkIfWalletIsConnected = useCallback(async () => {
     if (typeof window === 'undefined' || typeof (window as any).ethereum === 'undefined') {
-        setError('Metamask not detected. Please install the extension.')
+        // setError('Metamask not detected. Please install the extension.');
+        console.log('Metamask not detected.');
         return
     }
     try {
@@ -46,6 +47,15 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     checkIfWalletIsConnected()
+     if (typeof window !== 'undefined' && (window as any).ethereum) {
+      (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        } else {
+          setAccount(null);
+        }
+      });
+    }
   }, [checkIfWalletIsConnected])
   
   const connectWallet = async () => {

@@ -57,7 +57,7 @@ export default function ProducerPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      producerAddress: '',
+      producerAddress: account || '',
       mwhAmount: 1,
     },
   })

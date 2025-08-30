@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -33,13 +32,13 @@ export default function WalletConnect() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full justify-start">
-            <Wallet />
+            <Wallet className="mr-2 h-4 w-4" />
             <span className="truncate">{truncatedAddress}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
+        <DropdownMenuContent className="w-full">
           <DropdownMenuItem onClick={disconnectWallet}>
-            <LogOut />
+            <LogOut className="mr-2 h-4 w-4" />
             <span>Disconnect</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -50,7 +49,7 @@ export default function WalletConnect() {
   return (
     <>
       <Button onClick={connectWallet} className="w-full">
-        <Wallet />
+        <Wallet className="mr-2 h-4 w-4" />
         <span>Connect Wallet</span>
       </Button>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
