@@ -4,7 +4,7 @@
 // of your deployed contract.
 
 // TODO: Replace with your deployed contract address
-export const GHC_CONTRACT_ADDRESS = '0x0948519541aA493375827558117769d6345437e5';
+export const GHC_CONTRACT_ADDRESS = '0x0948519541aA493375827558117769d6345437E5';
 
 // The ABI (Application Binary Interface) for the GreenHydrogenCredit contract.
 // This is generated from the Solidity contract and is used by ethers.js to
