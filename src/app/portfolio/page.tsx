@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -17,20 +18,40 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { myGhcCredits } from '@/lib/mock-data'
+import { myGhcCredits as initialMyGhcCredits, GHCToken } from '@/lib/mock-data'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
-import { Droplets, Sun, Wind, CheckCircle, Hourglass } from 'lucide-react'
+import { Droplets, Sun, Wind, CheckCircle, Hourglass, Loader } from 'lucide-react'
+
+type TransactionState = {
+  [tokenId: number]: 'pending' | 'success' | 'idle'
+}
 
 export default function PortfolioPage() {
   const { toast } = useToast()
+  const [myGhcCredits, setMyGhcCredits] = useState<GHCToken[]>(initialMyGhcCredits);
+  const [transactions, setTransactions] = useState<TransactionState>({})
 
-  const handleRetire = (tokenId: number) => {
+
+  const handleRetire = async (tokenId: number) => {
+    setTransactions((prev) => ({ ...prev, [tokenId]: 'pending' }))
+
+    // Simulate blockchain transaction delay
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    
+    setMyGhcCredits((prevTokens) => 
+        prevTokens.map(token => 
+            token.id === tokenId ? { ...token, status: 'Retired' } : token
+        )
+    );
+
     toast({
       title: 'Retirement Successful',
       description: `GHC Token #${tokenId} has been retired.`,
       variant: 'default',
     })
+    
+    setTransactions((prev) => ({ ...prev, [tokenId]: 'success' }))
   }
   
   const energyIcons = {
@@ -96,10 +117,12 @@ export default function PortfolioPage() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      disabled={token.status === 'Retired'}
+                      disabled={token.status === 'Retired' || transactions[token.id] === 'pending'}
                       onClick={() => handleRetire(token.id)}
+                      className="w-24"
                     >
-                      Retire
+                      {transactions[token.id] === 'pending' && <Loader className="animate-spin" />}
+                      {transactions[token.id] !== 'pending' && 'Retire'}
                     </Button>
                   </TableCell>
                 </TableRow>
