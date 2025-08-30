@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   Gavel,
   Wallet,
+  Coins,
 } from 'lucide-react'
 
 import './globals.css'
@@ -74,7 +75,13 @@ export default function RootLayout({
                 <SidebarMenuItem>
                   <SidebarMenuButton href="/producer" tooltip="Producer Hub">
                     <Factory />
-                    <span>Producer Hub</span>
+                    <span>Mint Credits</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                  <SidebarMenuButton href="/portfolio" tooltip="My Portfolio">
+                    <Coins />
+                    <span>My Portfolio</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>

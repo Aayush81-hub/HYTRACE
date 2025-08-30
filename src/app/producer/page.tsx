@@ -68,9 +68,9 @@ export default function ProducerPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="font-headline text-4xl font-bold">Producer Hub</h1>
+        <h1 className="font-headline text-4xl font-bold">Mint Credits</h1>
         <p className="text-muted-foreground">
-          Mint new Green Hydrogen Credits (GHCs) and manage your assets.
+          Mint new Green Hydrogen Credits (GHCs) to list on the marketplace.
         </p>
       </div>
 
