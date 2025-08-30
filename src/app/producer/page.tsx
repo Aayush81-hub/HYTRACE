@@ -1,3 +1,4 @@
+
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -64,7 +65,7 @@ export default function ProducerPage() {
   
   useEffect(() => {
     if(account) {
-        form.setValue('producerAddress', account)
+        form.setValue('producerAddress', account, { shouldValidate: true })
     } else {
         form.resetField('producerAddress')
     }

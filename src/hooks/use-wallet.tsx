@@ -24,15 +24,29 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const [account, setAccount] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const getEthereum = () => {
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      return (window as any).ethereum;
+    }
+    return null;
+  }
+
+  const handleAccountsChanged = (accounts: string[]) => {
+    if (accounts.length > 0) {
+      setAccount(accounts[0]);
+    } else {
+      setAccount(null);
+      disconnectWallet();
+    }
+  };
+
   const checkIfWalletIsConnected = useCallback(async () => {
-    if (typeof window === 'undefined' || typeof (window as any).ethereum === 'undefined') {
-        // setError('Metamask not detected. Please install the extension.');
+    const ethereum = getEthereum();
+    if (!ethereum) {
         console.log('Metamask not detected.');
         return
     }
     try {
-      const { ethereum } = window as any
-
       const accounts = await ethereum.request({ method: 'eth_accounts' })
 
       if (accounts.length !== 0) {
@@ -47,20 +61,21 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     checkIfWalletIsConnected()
-     if (typeof window !== 'undefined' && (window as any).ethereum) {
-      (window as any).ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount(null);
-        }
-      });
+    const ethereum = getEthereum();
+     if (ethereum) {
+      ethereum.on('accountsChanged', handleAccountsChanged);
+    }
+
+    return () => {
+      if (ethereum) {
+        ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      }
     }
   }, [checkIfWalletIsConnected])
   
   const connectWallet = async () => {
     try {
-      const { ethereum } = window as any
+      const ethereum = getEthereum();
       if (!ethereum) {
         setError('Metamask not detected. Please install the extension.')
         return
