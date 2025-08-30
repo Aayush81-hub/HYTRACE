@@ -2,11 +2,13 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { ethers } from 'ethers'
 
 const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
 
 interface WalletState {
   account: string | null
+  signer: ethers.Signer | null
   connectWallet: () => Promise<void>
   disconnectWallet: () => void
   error: string | null
@@ -24,6 +26,7 @@ export const useWallet = () => {
 
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const [account, setAccount] = useState<string | null>(null)
+  const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [error, setError] = useState<string | null>(null)
 
   const getEthereum = () => {
@@ -32,13 +35,19 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return null;
   }
+  
+  const updateSigner = async (ethereum: any) => {
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
+      setSigner(signer);
+  }
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length > 0) {
       setAccount(accounts[0]);
+      updateSigner(getEthereum());
       checkNetwork();
     } else {
-      setAccount(null);
       disconnectWallet();
     }
   };
@@ -76,6 +85,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: SEPOLIA_CHAIN_ID }],
         });
+        // After switching, the chainChanged event should fire, which reloads the page.
       } catch (switchError: any) {
         // This error code indicates that the chain has not been added to MetaMask.
         if (switchError.code === 4902) {
@@ -101,6 +111,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (accounts.length !== 0) {
         setAccount(accounts[0])
+        await updateSigner(ethereum);
       } else {
         console.log('No authorized account found')
       }
@@ -141,6 +152,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
       setAccount(accounts[0])
+      await updateSigner(ethereum);
       setError(null)
     } catch (err) {
       setError('Failed to connect wallet.')
@@ -149,10 +161,11 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   const disconnectWallet = () => {
     setAccount(null)
+    setSigner(null)
   }
 
   return (
-    <WalletContext.Provider value={{ account, connectWallet, disconnectWallet, error }}>
+    <WalletContext.Provider value={{ account, signer, connectWallet, disconnectWallet, error }}>
       {children}
     </WalletContext.Provider>
   )
