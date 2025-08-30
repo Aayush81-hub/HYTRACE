@@ -6,7 +6,6 @@ import {
   Factory,
   ShoppingCart,
   Gavel,
-  Wallet,
   Coins,
 } from 'lucide-react'
 
@@ -27,6 +26,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/icons'
 import { cn } from '@/lib/utils'
+import { WalletProvider } from '@/hooks/use-wallet'
+import WalletConnect from '@/components/wallet-connect'
 
 export const metadata: Metadata = {
   title: 'Hytrace Marketplace',
@@ -54,75 +55,74 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased')}>
-        <SidebarProvider>
-          <Sidebar>
-            <SidebarHeader>
-              <Link href="/" className="flex items-center gap-2">
-                <Logo className="size-8 text-primary" />
-                <span className="font-headline text-xl font-semibold">
-                  Hytrace
-                </span>
-              </Link>
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="/" tooltip="Dashboard">
-                    <Home />
-                    <span>Dashboard</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="/producer" tooltip="Producer Hub">
-                    <Factory />
-                    <span>Mint Credits</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                  <SidebarMenuButton href="/portfolio" tooltip="My Portfolio">
-                    <Coins />
-                    <span>My Portfolio</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="/buyer" tooltip="Marketplace">
-                    <ShoppingCart />
-                    <span>Marketplace</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="/regulator" tooltip="Audit Trail">
-                    <Gavel />
-                    <span>Audit Trail</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton href="/analysis" tooltip="AI Analysis">
-                    <BrainCircuit />
-                    <span>AI Analysis</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter>
-              <Button variant="default" className="w-full">
-                <Wallet />
-                <span>Connect Wallet</span>
-              </Button>
-            </SidebarFooter>
-          </Sidebar>
-          <SidebarInset>
-            <header className="flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:h-16">
-              <SidebarTrigger className="md:hidden" />
-              <div className="flex-1">
-                {/* Potentially add breadcrumbs or page title here */}
-              </div>
-            </header>
-            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-              {children}
-            </main>
-          </SidebarInset>
-        </SidebarProvider>
+        <WalletProvider>
+          <SidebarProvider>
+            <Sidebar>
+              <SidebarHeader>
+                <Link href="/" className="flex items-center gap-2">
+                  <Logo className="size-8 text-primary" />
+                  <span className="font-headline text-xl font-semibold">
+                    Hytrace
+                  </span>
+                </Link>
+              </SidebarHeader>
+              <SidebarContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton href="/" tooltip="Dashboard">
+                      <Home />
+                      <span>Dashboard</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton href="/producer" tooltip="Producer Hub">
+                      <Factory />
+                      <span>Mint Credits</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                   <SidebarMenuItem>
+                    <SidebarMenuButton href="/portfolio" tooltip="My Portfolio">
+                      <Coins />
+                      <span>My Portfolio</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton href="/buyer" tooltip="Marketplace">
+                      <ShoppingCart />
+                      <span>Marketplace</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton href="/regulator" tooltip="Audit Trail">
+                      <Gavel />
+                      <span>Audit Trail</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton href="/analysis" tooltip="AI Analysis">
+                      <BrainCircuit />
+                      <span>AI Analysis</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarContent>
+              <SidebarFooter>
+                <WalletConnect />
+              </SidebarFooter>
+            </Sidebar>
+            <SidebarInset>
+              <header className="flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:h-16">
+                <SidebarTrigger className="md:hidden" />
+                <div className="flex-1">
+                  {/* Potentially add breadcrumbs or page title here */}
+                </div>
+              </header>
+              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                {children}
+              </main>
+            </SidebarInset>
+          </SidebarProvider>
+        </WalletProvider>
         <Toaster />
       </body>
     </html>
