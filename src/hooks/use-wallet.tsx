@@ -25,12 +25,12 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
 
   const checkIfWalletIsConnected = useCallback(async () => {
-    try {
-      const { ethereum } = window as any
-      if (!ethereum) {
+    if (typeof window === 'undefined' || typeof (window as any).ethereum === 'undefined') {
         setError('Metamask not detected. Please install the extension.')
         return
-      }
+    }
+    try {
+      const { ethereum } = window as any
 
       const accounts = await ethereum.request({ method: 'eth_accounts' })
 
@@ -57,6 +57,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
       setAccount(accounts[0])
+      setError(null)
     } catch (err) {
       setError('Failed to connect wallet.')
     }
@@ -64,7 +65,6 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   const disconnectWallet = () => {
     setAccount(null)
-    // In a real dApp, you might want to call a method to disconnect from the wallet provider if available
   }
 
   return (

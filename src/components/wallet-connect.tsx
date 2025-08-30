@@ -21,9 +21,9 @@ export default function WalletConnect() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full">
-            <Wallet />
-            <span>{truncatedAddress}</span>
+          <Button variant="outline" className="w-full justify-start">
+            <Wallet className="mr-2" />
+            <span className="truncate">{truncatedAddress}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
@@ -39,7 +39,7 @@ export default function WalletConnect() {
   return (
     <>
       <Button onClick={connectWallet} className="w-full">
-        <Wallet />
+        <Wallet className="mr-2" />
         <span>Connect Wallet</span>
       </Button>
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
