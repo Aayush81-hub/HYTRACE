@@ -135,10 +135,10 @@ export default function BuyerPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 text-center">
         <h1 className="font-headline text-4xl font-bold">Marketplace</h1>
-        <p className="text-muted-foreground">
-          Acquire Green Hydrogen Credits to meet your sustainability goals.
+        <p className="text-black/80">
+          Acquire <span className="highlight-yellow">Green Hydrogen Credits</span> to meet your sustainability goals.
         </p>
       </div>
         <Card>
@@ -169,8 +169,8 @@ export default function BuyerPage() {
                 {isLoading ? (
                     <TableRow>
                         <TableCell colSpan={6} className="h-24 text-center">
-                            <Loader className="mx-auto h-6 w-6 animate-spin text-primary" />
-                            <p className="mt-2 text-muted-foreground">Loading tokens from the blockchain...</p>
+                            <Loader className="mx-auto h-6 w-6 animate-spin text-black" />
+                            <p className="mt-2 text-black/80">Loading tokens from the blockchain...</p>
                         </TableCell>
                     </TableRow>
                 ) : availableTokens.length > 0 ? (
@@ -203,7 +203,7 @@ export default function BuyerPage() {
                   ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                        <TableCell colSpan={6} className="h-24 text-center text-black/80">
                             No available tokens found on the marketplace.
                         </TableCell>
                     </TableRow>

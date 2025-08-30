@@ -31,7 +31,7 @@ export default function WalletConnect() {
   }, [])
 
   if (!isClient) {
-    return <Skeleton className="h-9 w-28" />
+    return <Skeleton className="h-9 w-28 rounded-sm" />
   }
 
   if (account) {
@@ -74,7 +74,7 @@ export default function WalletConnect() {
 
   return (
     <>
-      <Button onClick={connectWallet} variant="default">
+      <Button onClick={connectWallet} variant="secondary">
         <Wallet className="mr-2 h-4 w-4" />
         <span>Connect Wallet</span>
       </Button>

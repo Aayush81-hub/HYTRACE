@@ -147,10 +147,10 @@ export default function PortfolioPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 text-center">
         <h1 className="font-headline text-4xl font-bold">My Portfolio</h1>
-        <p className="text-muted-foreground">
-          Manage your purchased credits and retire them to claim their environmental benefits.
+        <p className="text-black/80">
+          Manage your purchased credits and retire them to claim their <span className="bg-secondary-accent p-1">environmental benefits.</span>
         </p>
       </div>
 
@@ -181,13 +181,13 @@ export default function PortfolioPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
-                      <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                      <p className="mt-2 text-muted-foreground">Loading your tokens from the blockchain...</p>
+                      <Loader2 className="mx-auto h-6 w-6 animate-spin text-black" />
+                      <p className="mt-2 text-black/80">Loading your tokens from the blockchain...</p>
                   </TableCell>
                 </TableRow>
               ) : !account ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-24 text-center text-black/80">
                       Please connect your wallet to view your portfolio.
                   </TableCell>
                 </TableRow>
@@ -208,8 +208,11 @@ export default function PortfolioPage() {
                             : 'default'
                         }
                         className={cn(
+                          'text-white',
                           token.status === 'Owned' &&
-                            'bg-green-600 text-white hover:bg-green-700'
+                            'bg-blue-500 hover:bg-blue-600',
+                          token.status === 'Retired' &&
+                            'bg-gray-500 hover:bg-gray-600'
                         )}
                       >
                           {token.status === 'Owned' && <Hourglass className="mr-2 h-3 w-3" />}
@@ -233,7 +236,7 @@ export default function PortfolioPage() {
                 ))
               ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="h-24 text-center text-black/80">
                         You do not own any GHC tokens yet.
                     </TableCell>
                 </TableRow>

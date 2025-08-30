@@ -29,11 +29,12 @@ import { Logo } from '@/components/icons'
 import { cn } from '@/lib/utils'
 import { WalletProvider } from '@/hooks/use-wallet'
 import WalletConnect from '@/components/wallet-connect'
+import { Smiley } from '@/components/icons'
 
 export const metadata: Metadata = {
   title: 'Hytrace Marketplace',
   description:
-    'A decentralized marketplace for Green Hydrogen Credits (GHC).',
+    'A decentralized marketplace for Green Hydrogen Credits (GHCs).',
 }
 
 export default function RootLayout({
@@ -51,79 +52,30 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className={cn('font-body antialiased')}>
         <WalletProvider>
-          <SidebarProvider>
-            <Sidebar>
-              <SidebarHeader>
+            <div className="relative flex min-h-screen w-full">
+              <div className="absolute left-4 top-4 md:left-6 md:top-6">
                 <Link href="/" className="flex items-center gap-2">
-                  <Logo className="size-8 text-primary" />
-                  <span className="font-headline text-xl font-semibold">
-                    Hytrace
+                  <span className="font-headline text-4xl font-black italic text-black">
+                    HYTRACE
                   </span>
                 </Link>
-              </SidebarHeader>
-              <SidebarContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/" tooltip="Dashboard">
-                      <Home />
-                      <span>Dashboard</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/producer" tooltip="Producer Hub">
-                      <Factory />
-                      <span>Mint Credits</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                   <SidebarMenuItem>
-                    <SidebarMenuButton href="/portfolio" tooltip="My Portfolio">
-                      <Coins />
-                      <span>My Portfolio</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/buyer" tooltip="Marketplace">
-                      <ShoppingCart />
-                      <span>Marketplace</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/regulator" tooltip="Audit Trail">
-                      <Gavel />
-                      <span>Audit Trail</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/analysis" tooltip="AI Analysis">
-                      <BrainCircuit />
-                      <span>AI Analysis</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarContent>
-              <SidebarFooter>
-                {/* The WalletConnect component was here. It is now in the header. */}
-              </SidebarFooter>
-            </Sidebar>
-            <SidebarInset>
-              <header className="flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:h-16">
-                <SidebarTrigger className="md:hidden" />
-                <div className="flex-1">
-                  {/* Potentially add breadcrumbs or page title here */}
-                </div>
+              </div>
+
+               <div className="absolute right-4 top-4 md:right-6 md:top-6 flex items-center gap-4">
                 <WalletConnect />
-              </header>
-              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                <Smiley className="hidden h-8 w-8 text-black md:block" />
+              </div>
+
+              <main className="flex-1 overflow-y-auto p-4 pt-24 md:p-6 md:pt-24 lg:p-8 lg:pt-24">
                 {children}
               </main>
-            </SidebarInset>
-          </SidebarProvider>
+            </div>
         </WalletProvider>
         <Toaster />
       </body>

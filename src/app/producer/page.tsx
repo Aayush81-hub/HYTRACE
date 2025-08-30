@@ -132,15 +132,15 @@ export default function ProducerPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 text-center">
         <h1 className="font-headline text-4xl font-bold">Mint Credits</h1>
-        <p className="text-muted-foreground">
-          Mint new Green Hydrogen Credits (GHCs) to list on the marketplace.
+        <p className="text-black/80">
+          Mint new <span className="highlight-yellow">Green Hydrogen Credits (GHCs)</span> to list on the marketplace.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
+      <div className="grid grid-cols-1 gap-8">
+        <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>Mint New GHC Token</CardTitle>
             <CardDescription>
@@ -235,7 +235,7 @@ export default function ProducerPage() {
                                     variant={'outline'}
                                     className={cn(
                                     'pl-3 text-left font-normal',
-                                    !field.value && 'text-muted-foreground'
+                                    !field.value && 'text-black/60'
                                     )}
                                 >
                                     {field.value ? (
@@ -267,29 +267,13 @@ export default function ProducerPage() {
 
                     <Button type="submit" size="lg" className="w-full" disabled={!account || isMinting}>
                       {isMinting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isMinting ? 'Minting...' : 'Mint Token(s)'}
+                      {isMinting ? 'MINTING...' : 'MINT TOKEN(S)'}
                     </Button>
                 </form>
                 </Form>
             )}
           </CardContent>
         </Card>
-        <div className="lg:col-span-2">
-          <div className="relative h-full min-h-[400px] w-full overflow-hidden rounded-lg">
-             <Image
-              src="https://picsum.photos/600/800"
-              alt="Wind turbines"
-              fill
-              className="object-cover"
-              data-ai-hint="wind turbine"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-            <div className="absolute bottom-0 p-6 text-white">
-                <h3 className="font-headline text-2xl font-bold">Powering the Green Revolution</h3>
-                <p className="mt-2 text-white/80">Each GHC token you mint is a verifiable, immutable record of your contribution to a sustainable future. Trade your credits transparently and securely.</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
