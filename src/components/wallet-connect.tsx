@@ -1,6 +1,7 @@
 
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import { useWallet } from '@/hooks/use-wallet'
 import { Button } from '@/components/ui/button'
 import { Wallet, LogOut } from 'lucide-react'
@@ -10,9 +11,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from './ui/skeleton'
 
 export default function WalletConnect() {
   const { account, connectWallet, disconnectWallet, error } = useWallet()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return <Skeleton className="h-10 w-full" />
+  }
 
   if (account) {
     const truncatedAddress = `${account.substring(0, 6)}...${account.substring(
