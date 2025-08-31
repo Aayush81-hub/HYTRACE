@@ -40,48 +40,42 @@ export default function PortfolioPage() {
     if (!contract || !account) return;
     setIsLoading(true);
     try {
-      const balance = await contract.balanceOf(account);
-      const tokenIds = [];
-      for (let i = 0; i < balance; i++) {
-          const tokenId = await contract.tokenOfOwnerByIndex(account, i);
-          tokenIds.push(Number(tokenId));
-      }
+      // A more robust way to get tokens is to query all mint events
+      // and then check the owner of each token.
+      const issueFilter = contract.filters.CreditIssued();
+      const issuedEvents = await contract.queryFilter(issueFilter);
 
-      const tokens: GHCToken[] = await Promise.all(tokenIds.map(async (tokenId) => {
-        const details = await contract.creditDetails(tokenId);
-        const status = details.isRetired ? 'Retired' : 'Owned';
-        
-        return {
-          id: tokenId,
-          producer: details.producer,
-          energySource: details.energySource,
-          productionDate: new Date(Number(details.productionDate) * 1000).toLocaleDateString(),
-          price: 150, // Price would come from transaction history in a real app
-          status: status,
-          owner: account
-        };
-      }));
+      const tokens: GHCToken[] = [];
+
+      for (const event of issuedEvents) {
+          const tokenId = Number(event.args.tokenId);
+          const owner = await contract.ownerOf(tokenId);
+
+          if(owner.toLowerCase() === account.toLowerCase()){
+              const details = await contract.creditDetails(tokenId);
+              const status = details.isRetired ? 'Retired' : 'Owned';
+              
+              tokens.push({
+                id: tokenId,
+                producer: details.producer,
+                energySource: details.energySource,
+                productionDate: new Date(Number(details.productionDate) * 1000).toLocaleDateString(),
+                price: 150, // Price would come from transaction history in a real app
+                status: status,
+                owner: account
+              });
+          }
+      }
       
       setMyGhcCredits(tokens);
 
     } catch (error: any) {
       console.error("Failed to fetch your tokens:", error);
-      // This can happen on local dev nodes if tokenOfOwnerByIndex is not supported
-      if (error.message.includes("tokenOfOwnerByIndex is not a function")) {
-         toast({
-          title: 'Feature Not Supported',
-          description: 'Your local test network does not support fetching all tokens for an owner. Using mock data instead.',
-          variant: 'destructive',
-        });
-        const { myGhcCredits: mockCredits } = await import('@/lib/mock-data');
-        setMyGhcCredits(mockCredits.map(c => ({...c, owner: account})))
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch your tokens from the blockchain.',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch your tokens from the blockchain. Make sure you are on the Sepolia network.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -248,3 +242,5 @@ export default function PortfolioPage() {
     </div>
   )
 }
+
+    

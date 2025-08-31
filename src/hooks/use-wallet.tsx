@@ -40,9 +40,22 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   }
   
   const updateSignerAndContract = async (ethereum: any) => {
+      setError(null)
       const provider = new ethers.BrowserProvider(ethereum);
+      const network = await provider.getNetwork();
+      if(network.chainId !== BigInt(SEPOLIA_CHAIN_ID)){
+          setError("Incorrect network. Please switch to Sepolia.");
+          setAccount(null);
+          setSigner(null);
+          setContract(null);
+          await switchNetwork();
+          return;
+      }
+      
       const signer = await provider.getSigner();
+      const userAccount = await signer.getAddress();
       setSigner(signer);
+      setAccount(userAccount);
       
       const contract = new ethers.Contract(GHC_CONTRACT_ADDRESS, GHC_CONTRACT_ABI, signer);
       setContract(contract);
@@ -50,9 +63,8 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleAccountsChanged = (accounts: string[]) => {
     if (accounts.length > 0) {
-      setAccount(accounts[0]);
-      updateSignerAndContract(getEthereum());
-      checkNetwork();
+        const ethereum = getEthereum();
+        if(ethereum) updateSignerAndContract(ethereum);
     } else {
       disconnectWallet();
     }
@@ -62,26 +74,6 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     window.location.reload();
   };
 
-  const checkNetwork = async () => {
-    const ethereum = getEthereum();
-    if (!ethereum) return false;
-
-    try {
-      const chainId = await ethereum.request({ method: 'eth_chainId' });
-      if (chainId !== SEPOLIA_CHAIN_ID) {
-        setError('Incorrect network. Please switch to Sepolia.');
-        await switchNetwork();
-        return false;
-      }
-      setError(null);
-      return true;
-    } catch (err) {
-      console.error(err);
-      setError('Could not get network information.');
-      return false;
-    }
-  };
-  
   const switchNetwork = async () => {
       const ethereum = getEthereum();
       if (!ethereum) return;
@@ -106,14 +98,9 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
         return
     }
 
-    const isCorrectNetwork = await checkNetwork();
-    if (!isCorrectNetwork) return;
-
     try {
       const accounts = await ethereum.request({ method: 'eth_accounts' })
-
       if (accounts.length !== 0) {
-        setAccount(accounts[0])
         await updateSignerAndContract(ethereum);
       } else {
         console.log('No authorized account found')
@@ -146,18 +133,13 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
         setError('Metamask not detected. Please install the extension.')
         return
       }
-
-      const isCorrectNetwork = await checkNetwork();
-      if (!isCorrectNetwork) {
-          return;
-      }
-
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-      setAccount(accounts[0])
+      
+      await ethereum.request({ method: 'eth_requestAccounts' })
       await updateSignerAndContract(ethereum);
-      setError(null)
+
     } catch (err) {
       setError('Failed to connect wallet.')
+      console.error(err)
     }
   }
 
@@ -173,3 +155,5 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     </WalletContext.Provider>
   )
 }
+
+    
