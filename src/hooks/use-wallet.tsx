@@ -105,8 +105,10 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         console.log('No authorized account found')
       }
-    } catch (err) {
-      setError('An error occurred while checking for wallet connection.')
+    } catch (err: any) {
+      const errorMessage = err.reason || err.message || 'An error occurred while checking for wallet connection.';
+      setError(errorMessage);
+      console.error(err);
     }
   }, [])
 
@@ -137,9 +139,10 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       await ethereum.request({ method: 'eth_requestAccounts' })
       await updateSignerAndContract(ethereum);
 
-    } catch (err) {
-      setError('Failed to connect wallet.')
-      console.error(err)
+    } catch (err: any) {
+      const errorMessage = err.reason || err.message || 'Failed to connect wallet.';
+      setError(errorMessage);
+      console.error(err);
     }
   }
 
@@ -155,5 +158,3 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     </WalletContext.Provider>
   )
 }
-
-    
