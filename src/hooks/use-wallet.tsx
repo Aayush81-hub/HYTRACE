@@ -142,7 +142,6 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err: any) {
       const errorMessage = err.reason || err.message || 'Failed to connect wallet.';
       setError(errorMessage);
-      console.error(err);
     }
   }
 
