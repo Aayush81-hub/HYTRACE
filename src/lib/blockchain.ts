@@ -3,8 +3,14 @@
 // The contract address is a placeholder and should be replaced with the actual address
 // of your deployed contract.
 
+import { getAddress } from "ethers";
+
 // TODO: Replace with your deployed contract address
-export const GHC_CONTRACT_ADDRESS = '0x0948519541aA493375827558117769d6345437E5';
+const rawContractAddress = '0x9E1129141a4A34d5575510619c45693457a11e2a';
+
+// By using getAddress, we ensure the address is always correctly checksummed.
+export const GHC_CONTRACT_ADDRESS = getAddress(rawContractAddress);
+
 
 // The ABI (Application Binary Interface) for the GreenHydrogenCredit contract.
 // This is generated from the Solidity contract and is used by ethers.js to
@@ -545,4 +551,5 @@ export const GHC_CONTRACT_ABI = [
     "type": "function"
   }
 ]
+    
     
