@@ -545,5 +545,4 @@ export const GHC_CONTRACT_ABI = [
     "type": "function"
   }
 ]
-
     
